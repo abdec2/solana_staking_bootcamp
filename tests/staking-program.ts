@@ -11,12 +11,12 @@ describe("staking-program", () => {
   const payer = provider.wallet as anchor.Wallet;
   // const mintKeyPair = Keypair.generate();
   const mintKeyPair = Keypair.fromSecretKey(new Uint8Array([
-    254,  95, 193,   6, 151, 215,  52, 104,  31, 228,  69,
-    212, 147, 249, 146, 115, 117,  84,  23, 150, 127, 178,
-     32, 103, 151,  31,  89, 178,   6, 135,  15,  13, 192,
-    201,  62, 254,  43,  70, 125, 121,   1, 115, 172, 119,
-    155, 198, 118, 106, 254,  20, 205,  44, 172,  68, 230,
-    145, 111, 198, 124, 133,  96, 237, 175,  77
+    131,  48, 125,  29,   5,  35, 155,  59, 187, 151, 250,
+    178,  47, 143,   1, 224, 236, 199, 244, 200, 216, 254,
+    205, 248,  25, 101,   5, 163,  21, 218, 219, 252, 218,
+     22,  91,  53,  91,  47,  33,  41,  85,  87, 244,  76,
+    234,  35, 135, 114, 204,  25, 228,   7,  57, 175, 191,
+    153,  60, 254,  63, 221, 119,  59,  99, 101
   ])); 
   console.log(mintKeyPair);
 
@@ -93,7 +93,7 @@ describe("staking-program", () => {
 
 
     const tx = await program.methods
-      .stake(new anchor.BN(1))
+      .stake(new anchor.BN(1), new anchor.BN(1))
       .signers([payer.payer])
       .accounts({
         stakeInfoAccount: stakeInfo,

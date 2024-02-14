@@ -7,7 +7,7 @@ use anchor_spl::{
 
 use solana_program::clock::Clock;
 
-declare_id!("GWusN1tUFeQPprpXBVmBZqmhE3D4av6ccJpZugNRvLZC");
+declare_id!("G6gWdy9qdtTJKFbFf4QCaiKRGhHZrVY2F7nFA65WU4XY");
 
 pub mod constants {
     pub const VAULT_SEED: &[u8] = b"vault";
@@ -23,8 +23,26 @@ pub mod staking_program {
         Ok(())
     }
 
-    pub fn stake(ctx: Context<Stake>, amount: u64) -> Result<()> {
+    pub fn stake(ctx: Context<Stake>, amount: u64, lock_period: u64) -> Result<()> {
         let stake_info = &mut ctx.accounts.stake_info_account;
+
+        let check_period = match lock_period {
+            1 | 3 | 6 | 9 | 12 => true,
+            _ => false
+        };
+
+        if !check_period {
+            return Err(ErrorCode::InvalidPeriod.into());
+        }
+
+        let apy = match lock_period {
+            1 => 1,
+            3 => 4,
+            6 => 8,
+            9 => 12,
+            12 => 18,
+            _ => 0
+        };
 
         if stake_info.is_staked {
             return Err(ErrorCode::IsStaked.into());
@@ -36,8 +54,10 @@ pub mod staking_program {
 
         let clock = Clock::get()?;
 
-        stake_info.stake_at_slot = clock.slot;
+        stake_info.stake_at = clock.unix_timestamp;
         stake_info.is_staked = true;
+        stake_info.lock_period = lock_period * 30 * 24 * 60 * 60; // months converted into seconds
+        stake_info.apy = apy;
 
         let stake_amount = (amount)
             .checked_mul(10u64.pow(ctx.accounts.mint.decimals as u32))
@@ -67,13 +87,25 @@ pub mod staking_program {
 
         let clock = Clock::get()?;
 
-        let slots_passed = clock.slot - stake_info.stake_at_slot;
+        let slots_passed = (clock.unix_timestamp - stake_info.stake_at) as u64;
+
+        if slots_passed < stake_info.lock_period {
+            return Err(ErrorCode::StakingNotExpired.into());
+        }
 
         let stake_amount = ctx.accounts.stake_account.amount;
 
-        let reward = (slots_passed as u64)
-            .checked_mul(10u64.pow(ctx.accounts.mint.decimals as u32))
-            .unwrap();
+        let apy = stake_info.apy;
+
+        let per_year_reward = (stake_amount * apy as u64) / 100;
+
+        let per_second_reward = (per_year_reward / (365 * 24 * 60 * 60)) as u64; 
+
+        // let reward = (slots_passed as u64)
+        //     .checked_mul(10u64.pow(ctx.accounts.mint.decimals as u32))
+        //     .unwrap();
+
+        let reward = slots_passed as u64 * per_second_reward;
 
         let bump = ctx.bumps.token_vault_account;
         let signer: &[&[&[u8]]] = &[&[constants::VAULT_SEED, &[bump]]];
@@ -109,7 +141,7 @@ pub mod staking_program {
         )?;
 
         stake_info.is_staked = false;
-        stake_info.stake_at_slot = clock.slot;
+        stake_info.stake_at = clock.unix_timestamp;
 
         Ok(())
     }
@@ -215,9 +247,12 @@ pub struct DeStake<'info> {
 
 #[account]
 pub struct StakeInfo {
-    pub stake_at_slot: u64,
+    pub stake_at: i64,
     pub is_staked: bool,
+    pub lock_period: u64, // in months
+    pub apy: u8, // Annual Percentage Yield
 } 
+
 
 #[error_code]
 pub enum ErrorCode {
@@ -227,4 +262,8 @@ pub enum ErrorCode {
     NotStaked,
     #[msg("No Tokens to stake.")]
     NoTokens,
+    #[msg("Staking period not expired")]
+    StakingNotExpired,
+    #[msg("Invalid staking period")]
+    InvalidPeriod,
 }
