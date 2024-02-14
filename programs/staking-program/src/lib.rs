@@ -2,16 +2,17 @@ use anchor_lang::prelude::*;
 
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{Mint, Token, TokenAccount, Transfer, transfer}
+    token::{transfer, Mint, Token, TokenAccount, Transfer},
 };
 
 use solana_program::clock::Clock;
 
-declare_id!("GWusN1tUFeQPprpXBVmBZqmhE3D4av6ccJpZugNRvLZC");
+declare_id!("23jYSX3XCt4cM1WAQX1yo4eWW3bUGoCNPszvffffr8ck");
 
 pub mod constants {
     pub const VAULT_SEED: &[u8] = b"vault";
     pub const STAKE_INFO_SEED: &[u8] = b"stake_info";
+    pub const POOL_INFO_SEED: &[u8] = b"pool_info";
     pub const TOKEN_SEED: &[u8] = b"token";
 }
 
@@ -20,6 +21,10 @@ pub mod staking_program {
     use super::*;
 
     pub fn initialize(_ctx: Context<Initialize>) -> Result<()> {
+        Ok(())
+    }
+
+    pub fn create_pools(_ctx: Context<CreatePools>, _name: String) -> Result<()> {
         Ok(())
     }
 
@@ -43,17 +48,17 @@ pub mod staking_program {
             .checked_mul(10u64.pow(ctx.accounts.mint.decimals as u32))
             .unwrap();
 
-            transfer(
-                CpiContext::new(
-                    ctx.accounts.token_program.to_account_info(),
-                    Transfer {
-                        from: ctx.accounts.user_token_account.to_account_info(),
-                        to: ctx.accounts.stake_account.to_account_info(),
-                        authority: ctx.accounts.signer.to_account_info(),
-                    }
-                ), 
-                stake_amount,
-            )?;
+        transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                Transfer {
+                    from: ctx.accounts.user_token_account.to_account_info(),
+                    to: ctx.accounts.stake_account.to_account_info(),
+                    authority: ctx.accounts.signer.to_account_info(),
+                },
+            ),
+            stake_amount,
+        )?;
 
         Ok(())
     }
@@ -86,9 +91,9 @@ pub mod staking_program {
                     to: ctx.accounts.user_token_account.to_account_info(),
                     authority: ctx.accounts.token_vault_account.to_account_info(),
                 },
-                signer
+                signer,
             ),
-            reward
+            reward,
         )?;
 
         let staker = ctx.accounts.signer.key();
@@ -103,9 +108,9 @@ pub mod staking_program {
                     to: ctx.accounts.user_token_account.to_account_info(),
                     authority: ctx.accounts.stake_account.to_account_info(),
                 },
-                signer
-            ), 
-            stake_amount
+                signer,
+            ),
+            stake_amount,
         )?;
 
         stake_info.is_staked = false;
@@ -119,7 +124,7 @@ pub mod staking_program {
 pub struct Initialize<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
-    
+
     #[account(
         init_if_needed, 
         seeds = [constants::VAULT_SEED],
@@ -129,7 +134,7 @@ pub struct Initialize<'info> {
         token::authority = token_vault_account,
     )]
     pub token_vault_account: Account<'info, TokenAccount>,
-    
+
     pub mint: Account<'info, Mint>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
@@ -166,11 +171,28 @@ pub struct Stake<'info> {
     )]
     pub user_token_account: Account<'info, TokenAccount>,
 
-    pub mint: Account<'info, Mint>, 
+    pub mint: Account<'info, Mint>,
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
+}
 
+#[derive(Accounts)]
+#[instruction(_name: String)]
+pub struct CreatePools<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    #[account(
+        init_if_needed,
+        seeds = [constants::POOL_INFO_SEED, _name.as_bytes().as_ref()], 
+        bump, 
+        payer = signer, 
+        space = 8 + std::mem::size_of::<PoolInfo>()
+    )]
+    pub pool_info_account: Account<'info, PoolInfo>,
+
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -206,18 +228,34 @@ pub struct DeStake<'info> {
     )]
     pub user_token_account: Account<'info, TokenAccount>,
 
-    pub mint: Account<'info, Mint>, 
+    pub mint: Account<'info, Mint>,
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
-
 }
 
 #[account]
 pub struct StakeInfo {
     pub stake_at_slot: u64,
     pub is_staked: bool,
-} 
+}
+
+#[account]
+pub struct UserInfo {
+    pub amount: u64,
+    pub reward_debt: u64,     // user reward per token paid
+    pub reward_lockedup: u64, //rewards
+    pub timestamp: u64,       //stake time
+}
+
+#[account]
+pub struct PoolInfo {
+    pub duration: u64,            // total lock period in seconds
+    pub apy: u8,                  // apy
+    pub last_reward_time: u64,    // Last block time that reward distribution occurs.
+    pub acc_token_per_share: u64, // Accumulated reward per share, rewardPerTokenStored
+    pub total_supply: u64,        // total supply in this pool
+}
 
 #[error_code]
 pub enum ErrorCode {
