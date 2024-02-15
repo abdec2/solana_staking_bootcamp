@@ -7,7 +7,7 @@ use anchor_spl::{
 
 use solana_program::clock::Clock;
 
-declare_id!("23jYSX3XCt4cM1WAQX1yo4eWW3bUGoCNPszvffffr8ck");
+declare_id!("5uZhUDD6LCJ2jBawQenSPAzu67gAZwdFhq9wx1QUT6LL");
 
 pub mod constants {
     pub const VAULT_SEED: &[u8] = b"vault";
@@ -24,7 +24,7 @@ pub mod staking_program {
         Ok(())
     }
 
-    pub fn create_pools(_ctx: Context<CreatePools>, _name: String) -> Result<()> {
+    pub fn create_pools(_ctx: Context<CreatePools>, id: String) -> Result<()> {
         Ok(())
     }
 
@@ -178,24 +178,6 @@ pub struct Stake<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(_name: String)]
-pub struct CreatePools<'info> {
-    #[account(mut)]
-    pub signer: Signer<'info>,
-
-    #[account(
-        init_if_needed,
-        seeds = [constants::POOL_INFO_SEED, _name.as_bytes().as_ref()], 
-        bump, 
-        payer = signer, 
-        space = 8 + std::mem::size_of::<PoolInfo>()
-    )]
-    pub pool_info_account: Account<'info, PoolInfo>,
-
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
 pub struct DeStake<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -231,6 +213,24 @@ pub struct DeStake<'info> {
     pub mint: Account<'info, Mint>,
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(id: String)]
+pub struct CreatePools<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    #[account(
+        init_if_needed,
+        seeds = [id.as_bytes().as_ref(), constants::POOL_INFO_SEED], 
+        bump, 
+        payer = signer, 
+        space = 8 + std::mem::size_of::<PoolInfo>()
+    )]
+    pub pool_info_account: Account<'info, PoolInfo>,
+
     pub system_program: Program<'info, System>,
 }
 
