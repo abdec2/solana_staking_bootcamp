@@ -74,6 +74,10 @@ pub mod staking_program {
 
         let slots_passed = clock.slot - stake_info.stake_at_slot;
 
+        if slots_passed < stake_info.lock_period {
+            return Err(ErrorCode::StakingNotExpired.into());
+        }
+
         let stake_amount = ctx.accounts.stake_account.amount;
 
         let reward = (slots_passed as u64)
