@@ -269,4 +269,8 @@ pub enum ErrorCode {
     NotStaked,
     #[msg("No Tokens to stake.")]
     NoTokens,
+    #[msg("Staking period not expired")]
+    StakingNotExpired,
+    #[msg("Invalid staking period")]
+    InvalidPeriod,
 }
