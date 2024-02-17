@@ -37,125 +37,127 @@ describe("staking-program", () => {
     console.log(mint)
   }
 
-  it("Is initialized!", async () => {
-    // Add your test here.
-    // await createMintToken();
+  // it("Is initialized!", async () => {
+  //   // Add your test here.
+  //   // await createMintToken();
 
-    let [vaultAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from("vault")],
-      program.programId
-    )
+  //   let [vaultAccount] = PublicKey.findProgramAddressSync(
+  //     [Buffer.from("vault")],
+  //     program.programId
+  //   )
 
-    const tx = await program.methods.initialize()
-      .accounts({
-        signer: payer.publicKey,
-        tokenVaultAccount: vaultAccount, 
-        mint: mintKeyPair.publicKey
-      })
-      .rpc();
-    console.log("Your transaction signature", tx);
-  });
+  //   const tx = await program.methods.initialize()
+  //     .accounts({
+  //       signer: payer.publicKey,
+  //       tokenVaultAccount: vaultAccount, 
+  //       mint: mintKeyPair.publicKey
+  //     })
+  //     .rpc();
+  //   console.log("Your transaction signature", tx);
+  // });
 
   it("Stake!", async () => {
 
     let userTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection, 
       payer.payer,
-      mintKeyPair.publicKey,
-      payer.publicKey
+      new PublicKey("9UEudZeCzs8jZKf72TZzYbFb5LLHXieR1ogcLEBUnUds"),
+      new PublicKey("4bRYs66kGxujekaRGHJjvjP4g7SCou28FZJ8LPDsyDnR")
     );
 
-    await mintTo(
-      connection, 
-      payer.payer,
-      mintKeyPair.publicKey,
-      userTokenAccount.address,
-      payer.payer,
-      1e11
-    );
+    console.log(userTokenAccount)
 
-    let [stakeInfo] = PublicKey.findProgramAddressSync(
-      [Buffer.from("stake_info"), payer.publicKey.toBuffer()],
-      program.programId
-    );
+    // await mintTo(
+    //   connection, 
+    //   payer.payer,
+    //   mintKeyPair.publicKey,
+    //   userTokenAccount.address,
+    //   payer.payer,
+    //   1e11
+    // );
 
-    let [stakeAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from("token"), payer.publicKey.toBuffer()],
-      program.programId
-    );
+    // let [stakeInfo] = PublicKey.findProgramAddressSync(
+    //   [Buffer.from("stake_info"), payer.publicKey.toBuffer()],
+    //   program.programId
+    // );
 
-    await getOrCreateAssociatedTokenAccount(
-      connection,
-      payer.payer,
-      mintKeyPair.publicKey,
-      payer.publicKey
-    );
+    // let [stakeAccount] = PublicKey.findProgramAddressSync(
+    //   [Buffer.from("token"), payer.publicKey.toBuffer()],
+    //   program.programId
+    // );
+
+    // await getOrCreateAssociatedTokenAccount(
+    //   connection,
+    //   payer.payer,
+    //   mintKeyPair.publicKey,
+    //   payer.publicKey
+    // );
 
 
-    const tx = await program.methods
-      .stake(new anchor.BN(1), new anchor.BN(1))
-      .signers([payer.payer])
-      .accounts({
-        stakeInfoAccount: stakeInfo,
-        stakeAccount: stakeAccount,
-        userTokenAccount: userTokenAccount.address,
-        mint: mintKeyPair.publicKey,
-        signer: payer.publicKey
-      })
-      .rpc();
+    // const tx = await program.methods
+    //   .stake(new anchor.BN(1), new anchor.BN(1))
+    //   .signers([payer.payer])
+    //   .accounts({
+    //     stakeInfoAccount: stakeInfo,
+    //     stakeAccount: stakeAccount,
+    //     userTokenAccount: userTokenAccount.address,
+    //     mint: mintKeyPair.publicKey,
+    //     signer: payer.publicKey
+    //   })
+    //   .rpc();
 
-    console.log("Your transaction signature", tx);
+    // console.log("Your transaction signature", tx);
 
   });
 
-  it("DeStake!", async () => {
+  // it("DeStake!", async () => {
 
-    let userTokenAccount = await getOrCreateAssociatedTokenAccount(
-      connection, 
-      payer.payer,
-      mintKeyPair.publicKey,
-      payer.publicKey
-    );
+  //   let userTokenAccount = await getOrCreateAssociatedTokenAccount(
+  //     connection, 
+  //     payer.payer,
+  //     mintKeyPair.publicKey,
+  //     payer.publicKey
+  //   );
 
-    let [stakeInfo] = PublicKey.findProgramAddressSync(
-      [Buffer.from("stake_info"), payer.publicKey.toBuffer()],
-      program.programId
-    );
+  //   let [stakeInfo] = PublicKey.findProgramAddressSync(
+  //     [Buffer.from("stake_info"), payer.publicKey.toBuffer()],
+  //     program.programId
+  //   );
 
-    let [stakeAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from("token"), payer.publicKey.toBuffer()],
-      program.programId
-    );
+  //   let [stakeAccount] = PublicKey.findProgramAddressSync(
+  //     [Buffer.from("token"), payer.publicKey.toBuffer()],
+  //     program.programId
+  //   );
 
-    let [vaultAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from("vault")],
-      program.programId
-    )
+  //   let [vaultAccount] = PublicKey.findProgramAddressSync(
+  //     [Buffer.from("vault")],
+  //     program.programId
+  //   )
 
-    await mintTo(
-      connection,
-      payer.payer,
-      mintKeyPair.publicKey,
-      vaultAccount,
-      payer.payer,
-      1e21
-    );
+  //   await mintTo(
+  //     connection,
+  //     payer.payer,
+  //     mintKeyPair.publicKey,
+  //     vaultAccount,
+  //     payer.payer,
+  //     1e21
+  //   );
 
-    const tx = await program.methods
-      .destake()
-      .signers([payer.payer])
-      .accounts({
-        stakeAccount: stakeAccount,
-        stakeInfoAccount: stakeInfo,
-        userTokenAccount: userTokenAccount.address,
-        tokenVaultAccount: vaultAccount,
-        signer: payer.publicKey,
-        mint: mintKeyPair.publicKey
-      })
-      .rpc();
+  //   const tx = await program.methods
+  //     .destake()
+  //     .signers([payer.payer])
+  //     .accounts({
+  //       stakeAccount: stakeAccount,
+  //       stakeInfoAccount: stakeInfo,
+  //       userTokenAccount: userTokenAccount.address,
+  //       tokenVaultAccount: vaultAccount,
+  //       signer: payer.publicKey,
+  //       mint: mintKeyPair.publicKey
+  //     })
+  //     .rpc();
 
-    console.log("Your transaction signature", tx);
+  //   console.log("Your transaction signature", tx);
 
-  });
+  // });
 
 });
