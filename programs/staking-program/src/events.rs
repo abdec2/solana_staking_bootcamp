@@ -7,3 +7,11 @@ pub struct DepositEvent {
     pub amount: u64,
     pub timestamp: i64,
 }
+
+#[event]
+pub struct WithdrawEvent {
+    pub from: Pubkey,
+    pub pool: Pubkey,
+    pub amount: u64,
+    pub timestamp: i64,
+}

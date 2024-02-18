@@ -14,4 +14,6 @@ pub enum ErrorCode {
     InvalidPeriod,
     #[msg("Not Allowed")]
     NotAllowed,
+    #[msg("Invalid Amount")]
+    InvalidAmount,
 }
