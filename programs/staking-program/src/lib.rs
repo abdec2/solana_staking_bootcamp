@@ -8,7 +8,7 @@ use anchor_spl::{
 
 use solana_program::clock::Clock;
 
-declare_id!("BdNMPi4nW22Gg1DNMoK9aX2P9Q6zw3HdkxfZ1rYJquac");
+declare_id!("R1rcH9QTUdgqFVhLbr9MumhdfLCDgZ53rxBro1Emtet");
 
 pub mod constants {
     pub const VAULT_SEED: &[u8] = b"vault";
@@ -92,9 +92,9 @@ pub mod staking_program {
 
         let slots_passed = (clock.unix_timestamp - stake_info.stake_at) as u64;
 
-        if slots_passed < stake_info.lock_period {
-            return Err(ErrorCode::StakingNotExpired.into());
-        }
+        // if slots_passed < stake_info.lock_period {
+        //     return Err(ErrorCode::StakingNotExpired.into());
+        // }
 
         let stake_amount = ctx.accounts.stake_account.amount;
 
@@ -103,6 +103,10 @@ pub mod staking_program {
         let per_year_reward = (stake_amount * apy as u64) / 100;
 
         let per_second_reward = (per_year_reward / (365 * 24 * 60 * 60)) as u64;
+
+        // let reward = (slots_passed as u64)
+        //     .checked_mul(10u64.pow(ctx.accounts.mint.decimals as u32))
+        //     .unwrap();
 
         let reward = slots_passed as u64 * per_second_reward;
 
@@ -194,8 +198,13 @@ pub struct Stake<'info> {
     )]
     pub stake_account: InterfaceAccount<'info, TokenAccount>,
 
-    #[account(mut)]
-    pub user_token_account: UncheckedAccount<'info>,
+    #[account(
+        mut,
+        associated_token::mint = mint,
+        associated_token::authority = signer,
+        associated_token::token_program = token_program
+    )]
+    pub user_token_account: InterfaceAccount<'info, TokenAccount>,
 
     pub mint: InterfaceAccount<'info, Mint>,
     pub token_program: Interface<'info, TokenInterface>,
@@ -229,8 +238,13 @@ pub struct DeStake<'info> {
     )]
     pub stake_account: InterfaceAccount<'info, TokenAccount>,
 
-    #[account(mut)]
-    pub user_token_account: UncheckedAccount<'info>,
+    #[account(
+        mut,
+        associated_token::mint = mint,
+        associated_token::authority = signer,
+        associated_token::token_program = token_program
+    )]
+    pub user_token_account: InterfaceAccount<'info, TokenAccount>,
 
     pub mint: InterfaceAccount<'info, Mint>,
     pub token_program: Interface<'info, TokenInterface>,
