@@ -1,0 +1,18 @@
+Creating token 2RLtxbonxzUQurT5byNo48BgmJ8AaziRfVqQS44Hicfb under program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb
+
+Address:  2RLtxbonxzUQurT5byNo48BgmJ8AaziRfVqQS44Hicfb
+Decimals:  9
+
+Signature: 5kWEQ8KSv7gxiZ2QbgSdrfznFQq73FoFCRymHDt92a7Ttg8CHMRWDw9o65g4skehrjVKU7oVSNNPxJxAFoe8s7dp
+
+
+Creating account saKFSGoGy8CuUVpJ7br1haAtJn1KGdJHxaaFN4g5KHa
+
+Signature: 4evgDjEZbfutnf8UV3mFp9ATHhZjdopLdxH3Bb2nSWTrk5yRFAy5XaZ1VV9VwtRyqyFt8bJGmXX7sKCUKTikLwar
+
+
+Minting 100000 tokens
+  Token: 2RLtxbonxzUQurT5byNo48BgmJ8AaziRfVqQS44Hicfb
+  Recipient: saKFSGoGy8CuUVpJ7br1haAtJn1KGdJHxaaFN4g5KHa
+
+Signature: 2ejC6iGL4Thpb7htA2xMiMtnm2Pjz1ESZk7HB8jVzXVKxJ578epXKZii6UqAzUHF6E7N9MvFWofYLmFDgQoQkPbP
