@@ -8,7 +8,7 @@ use anchor_spl::{
 
 use solana_program::clock::Clock;
 
-declare_id!("R1rcH9QTUdgqFVhLbr9MumhdfLCDgZ53rxBro1Emtet");
+declare_id!("36YryptT8XnNPoDytZrSAQyJBFNzZDU6ZRKpwoVp6HPC");
 
 pub mod constants {
     pub const VAULT_SEED: &[u8] = b"vault";
@@ -92,9 +92,9 @@ pub mod staking_program {
 
         let slots_passed = (clock.unix_timestamp - stake_info.stake_at) as u64;
 
-        // if slots_passed < stake_info.lock_period {
-        //     return Err(ErrorCode::StakingNotExpired.into());
-        // }
+        if slots_passed < stake_info.lock_period {
+            return Err(ErrorCode::StakingNotExpired.into());
+        }
 
         let stake_amount = ctx.accounts.stake_account.amount;
 
