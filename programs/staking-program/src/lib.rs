@@ -8,7 +8,7 @@ use anchor_spl::{
 
 use solana_program::clock::Clock;
 
-declare_id!("36YryptT8XnNPoDytZrSAQyJBFNzZDU6ZRKpwoVp6HPC");
+declare_id!("8CXcuasx4tVjFeSs1D7P39TnEhq8GKSJYYiRtAnG4kPo");
 
 pub mod constants {
     pub const VAULT_SEED: &[u8] = b"vault";
@@ -167,7 +167,7 @@ pub struct Initialize<'info> {
         token::mint = mint,
         token::authority = token_vault_account,
     )]
-    pub token_vault_account: InterfaceAccount<'info, TokenAccount>,
+    pub token_vault_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub mint: InterfaceAccount<'info, Mint>,
     pub token_program: Interface<'info, TokenInterface>,
@@ -186,7 +186,7 @@ pub struct Stake<'info> {
         payer = signer, 
         space = 8 + std::mem::size_of::<StakeInfo>()
     )]
-    pub stake_info_account: Account<'info, StakeInfo>,
+    pub stake_info_account: Box<Account<'info, StakeInfo>>,
 
     #[account(
         init_if_needed,
@@ -196,7 +196,7 @@ pub struct Stake<'info> {
         token::mint = mint,
         token::authority = stake_account
     )]
-    pub stake_account: InterfaceAccount<'info, TokenAccount>,
+    pub stake_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         mut,
